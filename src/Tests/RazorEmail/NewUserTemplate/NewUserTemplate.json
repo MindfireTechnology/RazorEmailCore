@@ -1,0 +1,7 @@
+﻿{
+	"from": "donotreply@test.com",
+	"displayName": "Test Project",
+	"subject": "New User Created",
+	"cc": "",
+	"bcc": "nobody@user.com"
+}

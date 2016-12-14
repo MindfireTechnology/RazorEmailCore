@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorEmailCore", "RazorEmailCore\RazorEmailCore.xproj", "{4A5E0BA4-A70B-42CD-B901-433DD79D556E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AA010D85-3475-40BA-A288-54762EB9AB43}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Tests", "Tests\Tests.xproj", "{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorEmailCore.SendGrid", "RazorEmailCore.SendGrid\RazorEmailCore.SendGrid.xproj", "{85A67F90-463F-4B31-822E-3B231F50A8B3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4A5E0BA4-A70B-42CD-B901-433DD79D556E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A5E0BA4-A70B-42CD-B901-433DD79D556E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A5E0BA4-A70B-42CD-B901-433DD79D556E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A5E0BA4-A70B-42CD-B901-433DD79D556E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85A67F90-463F-4B31-822E-3B231F50A8B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85A67F90-463F-4B31-822E-3B231F50A8B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85A67F90-463F-4B31-822E-3B231F50A8B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85A67F90-463F-4B31-822E-3B231F50A8B3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
