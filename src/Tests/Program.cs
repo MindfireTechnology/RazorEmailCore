@@ -19,6 +19,7 @@ namespace Tests
 		{
 
 			var emailBuilder = new RazorEmail();
+			emailBuilder.CreateEmail("NewUserTemplate", new { });
 
 
 			//string content = "Hello @Model.Name. Welcome to @Model.Title repository";

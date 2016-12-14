@@ -13,8 +13,8 @@ namespace RazorEmailCore
 		string CC { get; set; }
 		string BCC { get; set; }
 
-		string PlainTextEmailTemplatePath { get; set; }
-		string HtmlEmailTemplatePath { get; set; }
+		string PlainTextEmailTemplate { get; set; }
+		string HtmlEmailTemplate { get; set; }
 
 		void LoadByName(string templateName);
 	}

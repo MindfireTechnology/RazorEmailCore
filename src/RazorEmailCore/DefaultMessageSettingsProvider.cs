@@ -22,9 +22,9 @@ namespace RazorEmailCore
 
 		public string From { get; set; }
 
-		public string HtmlEmailTemplatePath { get; set; }
+		public string HtmlEmailTemplate { get; set; }
 
-		public string PlainTextEmailTemplatePath { get; set; }
+		public string PlainTextEmailTemplate { get; set; }
 
 		public string Subject { get; set; }
 
@@ -42,12 +42,60 @@ namespace RazorEmailCore
 				dirpath = Path.Combine(BasePath, templateName);
 
 			// Look for the correct files (.json, .razor, .text)
-			string jsonFile = Directory.EnumerateFiles(dirpath, "*.json").Single();
-			string razorFile = Directory.EnumerateFiles(dirpath, "*.razor").SingleOrDefault();
-			string textFile = Directory.EnumerateFiles(dirpath, "*.text").SingleOrDefault();
 
-			var serializer = new DataContractJsonSerializer(this.GetType());
-			serializer.ReadObject()
+			string jsonFile;
+			string razorFile;
+			string textFile;
+
+			try
+			{
+				jsonFile = Directory.EnumerateFiles(dirpath, "*.json").Single();
+				razorFile = Directory.EnumerateFiles(dirpath, "*.razor").SingleOrDefault();
+				textFile = Directory.EnumerateFiles(dirpath, "*.text").SingleOrDefault();
+			}
+			catch (InvalidOperationException ioex)
+			{
+				throw new RazorEmailCoreConfigurationException("One or more expected configuration files are missing or invalid (possibly duplicated).", ioex);
+			}
+
+			// Read the configuration in the json file
+			ConfigSettings settings;
+			try
+			{
+				var serializer = new DataContractJsonSerializer(typeof(ConfigSettings));
+				using (var fs = File.OpenRead(jsonFile))
+					settings = (ConfigSettings)serializer.ReadObject(fs);
+
+				MapSettings(settings);
+			}
+			catch (Exception ex)
+			{
+				throw new RazorEmailCoreConfigurationException($"Error reading configuration file: {jsonFile}", ex);
+			}
+
+			if (!string.IsNullOrWhiteSpace(razorFile))
+				HtmlEmailTemplate = File.ReadAllText(razorFile);
+
+			if (!string.IsNullOrWhiteSpace(textFile))
+				PlainTextEmailTemplate = File.ReadAllText(textFile);
 		}
+
+		private void MapSettings(ConfigSettings settings)
+		{
+			From = settings.from;
+			DisplayName = settings.displayName;
+			Subject = settings.subject;
+			CC = settings.cc;
+			BCC = settings.bcc;
+		}
+	}
+
+	public class ConfigSettings
+	{
+		public string from { get; set; }
+		public string displayName { get; set; }
+		public string subject { get; set; }
+		public string cc { get; set; }
+		public string bcc { get; set; }
 	}
 }

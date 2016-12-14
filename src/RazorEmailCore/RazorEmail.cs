@@ -24,7 +24,9 @@ namespace RazorEmailCore
 
 		public Email CreateEmail(string templateName, object model)
 		{
-			throw new NotImplementedException();
+			MessageSettingsProvider.LoadByName(templateName);
+
+			return null;
 		}
 	}
 }
