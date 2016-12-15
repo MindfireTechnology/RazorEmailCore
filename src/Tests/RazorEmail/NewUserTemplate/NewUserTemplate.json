@@ -1,11 +1,10 @@
 {
-	"from": "\"RazorEmailCore\" <donotreply@1upti.me>",
-	"displayName": "Test Project",
+	"from": "\"RazorEmailCore\" <donotreply@SomeDomain.com>",
 	"subject": "New User Created",
 	"cc": "",
-	"bcc": "nate@mindfiretechnology.com",
+	"bcc": "nate@SomeDomain.com",
 
 	"server": "smtp://smtp.sendgrid.net:587",
-	"username": "MindfireTechnology",
-	"password": "Mindfire2015!"
+	"username": "",
+	"password": ""
 }

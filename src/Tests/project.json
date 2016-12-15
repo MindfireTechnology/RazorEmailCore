@@ -4,9 +4,6 @@
 	"buildOptions": {
 		"emitEntryPoint": true,
 			"preserveCompilationContext": true
-			//"compile": {
-			//				"excludeFiles": "RazorEmail" 
-			//}
 	},
 
 	"dependencies": {

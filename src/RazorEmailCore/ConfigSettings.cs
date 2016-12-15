@@ -11,8 +11,6 @@ namespace RazorEmailCore
 	{
 		[DataMember(Name ="from")]
 		public string From { get; set; }
-		[DataMember(Name = "displayName")]
-		public string DisplayName { get; set; }
 		[DataMember(Name = "subject")]
 		public string Subject { get; set; }
 		[DataMember(Name = "cc")]
