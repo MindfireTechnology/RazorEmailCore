@@ -1,0 +1,45 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata minClientVersion="3.2">
+		<id>RazorEmailCore</id>
+		<version>1.0.0-beta</version>
+		<authors>Nate Zaugg</authors>
+		<owners>Mindfire Technology</owners>
+		<copyright>Copyright ©2016 Mindfire Technology</copyright>
+		<licenseUrl>https://github.com/MindfireTechnology/RazorEmailCore/blob/master/LICENSE</licenseUrl>
+		<projectUrl>https://github.com/MindfireTechnology/RazorEmailCore</projectUrl>
+		<iconUrl>https://avatars3.githubusercontent.com/u/13372702</iconUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>This library is designed to help generate and send email messages using razor templates.</description>
+		<releaseNotes></releaseNotes>
+		<tags>Razor, Email, dotnet core</tags>
+		<dependencies>
+			<group targetFramework=".NETStandard1.6">
+				<dependency id="NETStandard.Library" version="[1.6.1, )" />
+				<dependency id="System.Runtime.Serialization.Json" version="[4.0.1, )" />
+				<dependency id="RazorLight" version="[1.0.0-rc1, )" />
+			</group>
+			<!--
+			<dependency id="System.Collections" version="4.3.0" />
+			<dependency id="System.Diagnostics.Debug" version="4.3.0" />
+			<dependency id="System.IO" version="4.3.0" />
+			<dependency id="System.IO.FileSystem" version="4.3.0" />
+			<dependency id="System.Linq" version="4.3.0" />
+			<dependency id="System.Net.Primitives" version="4.3.0" />
+			<dependency id="System.Net.Sockets" version="4.3.0" />
+			<dependency id="System.Runtime" version="4.3.0" />
+			<dependency id="System.Runtime.Extensions" version="4.3.0" />
+			<dependency id="System.Runtime.InteropServices" version="4.3.0" />
+			<dependency id="System.Text.Encoding" version="4.3.0" />
+			<dependency id="System.Threading.Tasks" version="4.3.0" />
+			
+			<dependency id="System.Runtime.Serialization.Json" version="4.0.1" />
+			<dependency id="System.Runtime.Serialization.Primitives" version="4.1.1" />
+			<dependency id="RazorLight" version="1.0.0-rc1" />
+			-->
+		</dependencies>
+	</metadata>
+	<files>
+		<file src=".\RazorEmailCore\bin\Release\netstandard1.6\RazorEmailCore.*" target="lib\netstandard1.6" />
+	</files>
+</package>

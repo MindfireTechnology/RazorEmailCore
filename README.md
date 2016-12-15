@@ -16,9 +16,9 @@ To enable this setting, open up your `project.json` file for your project (the e
 ```
 
 ###Base Path###
-The base path is configured via an Enviornment variable named `BaseTemplatePath`. This path is either relative to the executing 
-project or can be an absolute path. In Visual Studio you can set an Enviornment variable by going into the project properties, 
-Debug tab, and adding the value to the Enviornment variables section. 
+The base path is configured via an Environment variable named `BaseTemplatePath`. This path is either relative to the executing 
+project or can be an absolute path. In Visual Studio you can set an Environment variable by going into the project properties, 
+Debug tab, and adding the value to the Environment variables section. 
 
 Example: `BaseTemplatePath` => `RazorEmail`
 
@@ -120,7 +120,7 @@ This class must provide:
 This class is used to generate the content of the mail message from the template and the model data provided. 
 It is given the template text and the model and returns the generated output.
 
-**Note: The default option for this class is teh built-in `RazorMessageGenerator` class which makes use of the `RazorLight` library**
+**Note: The default option for this class is the built-in `RazorMessageGenerator` class which makes use of the `RazorLight` library**
 
 ###ISendEmailProvider###
 This class sends the `Email` object based on the config settings collected by the `IMessageSettingsProvider` class. 
@@ -128,7 +128,7 @@ This class sends the `Email` object based on the config settings collected by th
 **Note: The default option for this class is the built-in `SmtpSendEmailProvider` class which is a very simple SMTP client
 that currently only supports basic auth. There is no support for SSL or TSL.**
 
-##Depencency Injection##
+##Dependency Injection##
 There is a base interface for the `RazorEmail` class called `IRazorEmail` which can be helpful in dependency injection scenerios. 
 The constructor of the `RazorEmail` class provides the following prototype: 
 
