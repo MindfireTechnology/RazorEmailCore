@@ -12,37 +12,22 @@ namespace RazorEmailCore
 	{
 		public string BasePath { get; set; }
 
-
-
-		public string BCC { get; set; }
-
-		public string CC { get; set; }
-
-		public string DisplayName { get; set; }
-
-		public string From { get; set; }
-
-		public string HtmlEmailTemplate { get; set; }
-
-		public string PlainTextEmailTemplate { get; set; }
-
-		public string Subject { get; set; }
-
 		public DefaultMessageSettingsProvider()
 		{
 			string path = Environment.GetEnvironmentVariable("BaseTemplatePath");
 			BasePath = Path.Combine(Directory.GetCurrentDirectory(), path);
 		}
 
-		public void LoadByName(string templateName)
+		public ConfigSettings LoadByTemplateName(string templateName)
 		{
+			ConfigSettings result = null;
+
 			// Check to see if there is a directory with the template name
 			string dirpath = BasePath;
 			if (Directory.Exists(Path.Combine(BasePath, templateName)))
 				dirpath = Path.Combine(BasePath, templateName);
 
 			// Look for the correct files (.json, .razor, .text)
-
 			string jsonFile;
 			string razorFile;
 			string textFile;
@@ -59,14 +44,11 @@ namespace RazorEmailCore
 			}
 
 			// Read the configuration in the json file
-			ConfigSettings settings;
 			try
 			{
 				var serializer = new DataContractJsonSerializer(typeof(ConfigSettings));
 				using (var fs = File.OpenRead(jsonFile))
-					settings = (ConfigSettings)serializer.ReadObject(fs);
-
-				MapSettings(settings);
+					result = (ConfigSettings)serializer.ReadObject(fs);
 			}
 			catch (Exception ex)
 			{
@@ -74,28 +56,13 @@ namespace RazorEmailCore
 			}
 
 			if (!string.IsNullOrWhiteSpace(razorFile))
-				HtmlEmailTemplate = File.ReadAllText(razorFile);
+				result.HtmlEmailTemplate = File.ReadAllText(razorFile);
 
 			if (!string.IsNullOrWhiteSpace(textFile))
-				PlainTextEmailTemplate = File.ReadAllText(textFile);
+				result.PlainTextEmailTemplate = File.ReadAllText(textFile);
+
+			return result;
 		}
 
-		private void MapSettings(ConfigSettings settings)
-		{
-			From = settings.from;
-			DisplayName = settings.displayName;
-			Subject = settings.subject;
-			CC = settings.cc;
-			BCC = settings.bcc;
-		}
-	}
-
-	public class ConfigSettings
-	{
-		public string from { get; set; }
-		public string displayName { get; set; }
-		public string subject { get; set; }
-		public string cc { get; set; }
-		public string bcc { get; set; }
 	}
 }

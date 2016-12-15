@@ -31,5 +31,15 @@ namespace RazorEmailCore
 					&& (!string.IsNullOrWhiteSpace(PlainTextBody) || !string.IsNullOrWhiteSpace(HtmlBody));
 			}
 		}
+
+		public Email() { }
+
+		public Email(EmailAddress to, string subject, string htmlBody = null, string textBody = null)
+		{
+			To.Add(to);
+			Subject = subject;
+			HtmlBody = htmlBody;
+			PlainTextBody = PlainTextBody;
+		}
 	}
 }

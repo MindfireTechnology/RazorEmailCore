@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace RazorEmailCore
 {
-    public interface IMessageGenerator
-    {
-
-    }
+	public interface IMessageGenerator
+	{
+		string GenerateMessageBody(string template, object model);
+	}
 }

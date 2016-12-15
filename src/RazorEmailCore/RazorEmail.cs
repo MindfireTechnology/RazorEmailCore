@@ -7,6 +7,7 @@ namespace RazorEmailCore
 {
 	public class RazorEmail : IRazorEmail
 	{
+		public ConfigSettings Config { get; set; }
 		public IMessageSettingsProvider MessageSettingsProvider { get; set; }
 		public IMessageGenerator MessageGenerator { get; set; }
 		public ISendEmailProvider SendEmailProvider { get; set; }
@@ -15,18 +16,60 @@ namespace RazorEmailCore
 		{
 			// Use defaults
 			MessageSettingsProvider = new DefaultMessageSettingsProvider();
+			MessageGenerator = new RazorMessageGenerator();
+			SendEmailProvider = new SmtpSendEmailProvider();
 		}
 
-		public Email CreateEmail()
+		public RazorEmail(IMessageSettingsProvider settingsProvider = null, IMessageGenerator messageGenerator = null, ISendEmailProvider sendEmailProvider = null)
 		{
-			throw new NotImplementedException();
+			if (settingsProvider != null)
+				MessageSettingsProvider = settingsProvider;
+			else
+				MessageSettingsProvider = new DefaultMessageSettingsProvider();
+
+
+			if (messageGenerator != null)
+				MessageGenerator = messageGenerator;
+			else
+				MessageGenerator = new RazorMessageGenerator();
+
+
+			if (sendEmailProvider != null)
+				SendEmailProvider = sendEmailProvider;
+			else
+				SendEmailProvider = new SmtpSendEmailProvider();
 		}
 
-		public Email CreateEmail(string templateName, object model)
+		public virtual Email CreateEmail(string templateName, object model)
 		{
-			MessageSettingsProvider.LoadByName(templateName);
+			Config = MessageSettingsProvider.LoadByTemplateName(templateName);
 
-			return null;
+			string htmlMessage = null;
+			string textMessage = null;
+
+			if (!string.IsNullOrWhiteSpace(Config.HtmlEmailTemplate))
+				htmlMessage = MessageGenerator.GenerateMessageBody(Config.HtmlEmailTemplate, model);
+
+			if (!string.IsNullOrWhiteSpace(Config.PlainTextEmailTemplate))
+				textMessage = MessageGenerator.GenerateMessageBody(Config.PlainTextEmailTemplate, model);
+
+			var result = new Email { HtmlBody = htmlMessage, PlainTextBody = textMessage, Subject = Config.Subject, Sender = Config.From };
+
+			Config.Cc?.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(n => result.Cc.Add(n));
+			Config.Bcc?.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(n => result.Bcc.Add(n));			
+
+			return result;
+		}
+
+		public bool CreateAndSendEmail(EmailAddress sendTo, string templateName, object model)
+		{
+			Email message = CreateEmail(templateName, model);
+			message.To.Add(sendTo);
+
+			if (!message.MessageComplete)
+				throw new RazorEmailCoreException("Message is incomplete and cannot be sent.");
+
+			return SendEmailProvider.SendMessage(message, Config);
 		}
 	}
 }

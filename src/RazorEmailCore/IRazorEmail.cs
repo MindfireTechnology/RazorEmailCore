@@ -8,6 +8,6 @@ namespace RazorEmailCore
 	public interface IRazorEmail
 	{
 		Email CreateEmail(string templateName, object model);
-		Email CreateEmail();
+		bool CreateAndSendEmail(EmailAddress sendTo, string templateName, object model);
 	}
 }
