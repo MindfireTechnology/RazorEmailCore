@@ -56,13 +56,13 @@ namespace RazorEmailCore.SMTP
 				}
 
 				// MAIL FROM
-				Send($"MAIL FROM: {message.Sender}\r\n");
+				Send($"MAIL FROM: {message.Sender.Email}\r\n");
 				CheckMessageStatus(ReceiveMessage());
 
 				// RCPT TO
 				foreach (EmailAddress address in message.To.Concat(message.Cc).Concat(message.Bcc).Distinct())
 				{
-					Send($"RCPT TO: {address}\r\n");
+					Send($"RCPT TO: {address.Email}\r\n");
 					CheckMessageStatus(ReceiveMessage());
 				}
 

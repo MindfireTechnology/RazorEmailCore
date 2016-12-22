@@ -99,7 +99,7 @@ Console.WriteLine("Message sent successfully!");
 
 ##Customizations##
 
-This library was designed to have it's main modules replaced or extended based on the needs of the user. 
+This library was designed to have its main modules replaced or extended based on the needs of the user. 
 Below is a summary of the main interfaces.
 
 ###IMessageSettingsProvider###
@@ -111,7 +111,7 @@ This class must provide:
  1. The `Subject` for the email
  1. The `From` sender for the email
  1. The `Server` in URI format (e.g. `smtp://smtp.sendgrid.net:587`)
- 1. Optional loign information `Username` and `Password` for the SMTP server
+ 1. Optional login information `Username` and `Password` for the SMTP server
  1. Optional `Cc`, `Bcc` values
 
 **Note: The default option for this class is the built-in `DefaultMessageSettingsProvider` class**
