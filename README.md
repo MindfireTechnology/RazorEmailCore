@@ -23,7 +23,8 @@ Debug tab, and adding the value to the Environment variables section.
 Example: `BaseTemplatePath` => `RazorEmail`
 
 ###Folder Structure###
-`<BaseTemplatePath>\TemplateName\TemplateName.json` contains the main settings file.
+`<BaseTemplatePath>\settings.json` contains the base configuration file (can be named something else `.json`)
+`<BaseTemplatePath>\TemplateName\TemplateName.json` contains the template override settings file (optional)
 
 `<BaseTemplatePath>\TemplateName\TemplateName.razor` contains a razor template to produce an HTML mail message content (optional)
 
@@ -33,9 +34,11 @@ Either the `.razor` file or the `.text` file must exist. You can also supply bot
 
 **Note: The name of the file is unimportant, there just needs to be only one `.json` file, `.razor` or `.text` file each!**
 
-###Template Configuration###
-Each template needs to have a configuration file that ends with `.json`. This configuration takes the format of the example below:
-```
+###Base Configuration###
+A `.json` file is required in `<BaseTemplatePath>` to serve as the master settings for all templates. The idea is that default settings are kept here, and templates will override them if needed. Settings like `subject` will usually be overridden, but settings like `server`, `username`, and `password` will usually be defined once.
+
+ This configuration takes the format of the example below:
+```json
 {
 	"from": "\"RazorEmailCore\" <donotreply@SomeDomain.com>",
 	"subject": "New User Created",
@@ -48,6 +51,11 @@ Each template needs to have a configuration file that ends with `.json`. This co
 }
 ```
 
+As with any credentials in a project, we recommend not committing them to your source control.
+
+###Template Configuration###
+
+Templates may override settings in the Base Configuration by adding their own `.json` file of the same format as the Base Configuration.
 
 ###Code###
 
@@ -108,11 +116,11 @@ It returns a `ConfigSettings` class that can be inherited and expanded.
 
 This class must provide:
  1. Either the `HtmlEmailTemplate` or the `PlainTextEmailTemplate` values
- 1. The `Subject` for the email
- 1. The `From` sender for the email
- 1. The `Server` in URI format (e.g. `smtp://smtp.sendgrid.net:587`)
- 1. Optional login information `Username` and `Password` for the SMTP server
- 1. Optional `Cc`, `Bcc` values
+ 2. The `Subject` for the email
+ 3. The `From` sender for the email
+ 4. The `Server` in URI format (e.g. `smtp://smtp.sendgrid.net:587`)
+ 5. Optional login information `Username` and `Password` for the SMTP server
+ 6. Optional `Cc`, `Bcc` values
 
 **Note: The default option for this class is the built-in `DefaultMessageSettingsProvider` class**
 
