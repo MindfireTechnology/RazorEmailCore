@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
@@ -27,5 +28,28 @@ namespace RazorEmailCore
 
 		public string PlainTextEmailTemplate { get; set; }
 		public string HtmlEmailTemplate { get; set; }
+
+		/// <summary>
+		/// Replaces any public string properties in the target with defined properties in the source
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="target"></param>
+		public static void ReplacePublicStringProperties(ConfigSettings source, ConfigSettings target)
+		{
+			// loop over all public properties in ConfigSettings
+			foreach(PropertyInfo property in typeof(ConfigSettings).GetProperties())
+			{
+				// try to cast the property as a string
+				string sourceValue = property.GetValue(source) as string;
+			
+				// skip if the cast didn't work (null)
+				// or the string is null itself
+				if (string.IsNullOrWhiteSpace(sourceValue))
+					continue;
+
+				// replace the target's value with the source value
+				property.SetValue(target, sourceValue);
+			}
+		}
 	}
 }
