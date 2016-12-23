@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
-using System.Runtime.Serialization.Json;
+using Newtonsoft.Json;
 
 namespace RazorEmailCore
 {
@@ -17,7 +17,7 @@ namespace RazorEmailCore
 			BasePath = Path.Combine(Directory.GetCurrentDirectory(), path);
 		}
 
-		public ConfigSettings LoadByTemplateName(string templateName)
+		public virtual ConfigSettings LoadByTemplateName(string templateName)
 		{
 			ConfigSettings baseSettings = null;
 			ConfigSettings templateSettings = null;
@@ -70,9 +70,7 @@ namespace RazorEmailCore
 		{
 			try
 			{
-				var serializer = new DataContractJsonSerializer(typeof(ConfigSettings));
-				using (var fs = File.OpenRead(jsonFile))
-					return (ConfigSettings)serializer.ReadObject(fs);
+				return JsonConvert.DeserializeObject<ConfigSettings>(File.ReadAllText(jsonFile));
 			}
 			catch (Exception ex)
 			{
