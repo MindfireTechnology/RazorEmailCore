@@ -2,6 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata minClientVersion="3.2">
 		<id>RazorEmailCore</id>
+		<title>RazorEmailCore Library</title>
 		<version>1.0.3-beta</version>
 		<authors>Nate Zaugg</authors>
 		<owners>Mindfire Technology</owners>
