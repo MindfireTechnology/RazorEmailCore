@@ -3,10 +3,10 @@
 	<metadata minClientVersion="3.2">
 		<id>RazorEmailCore</id>
 		<title>RazorEmailCore Library</title>
-		<version>1.0.3-beta</version>
+		<version>1.0.4-beta</version>
 		<authors>Nate Zaugg</authors>
 		<owners>Mindfire Technology</owners>
-		<copyright>Copyright ©2016 Mindfire Technology</copyright>
+		<copyright>Copyright ©2017 Mindfire Technology</copyright>
 		<licenseUrl>https://github.com/MindfireTechnology/RazorEmailCore/blob/master/LICENSE</licenseUrl>
 		<projectUrl>https://github.com/MindfireTechnology/RazorEmailCore</projectUrl>
 		<iconUrl>https://avatars3.githubusercontent.com/u/13372702</iconUrl>
