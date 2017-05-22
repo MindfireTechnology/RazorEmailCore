@@ -105,6 +105,12 @@ Console.WriteLine("Message sent successfully!");
 
 ```
 
+You may also send emails asyncroniously:
+```
+// Async Simple Example
+await new RazorEmail().CreateAndSendEmailAsync("nate.zaugg@somedomain.com", "NewUserTemplace", new { Name = "Nate Zaugg" });
+```
+
 ## Customizations ##
 
 This library was designed to have its main modules replaced or extended based on the needs of the user. 
