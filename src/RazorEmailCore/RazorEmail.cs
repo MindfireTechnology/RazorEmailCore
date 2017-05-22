@@ -22,22 +22,9 @@ namespace RazorEmailCore
 
 		public RazorEmail(IMessageSettingsProvider settingsProvider = null, IMessageGenerator messageGenerator = null, ISendEmailProvider sendEmailProvider = null)
 		{
-			if (settingsProvider != null)
-				MessageSettingsProvider = settingsProvider;
-			else
-				MessageSettingsProvider = new DefaultMessageSettingsProvider();
-
-
-			if (messageGenerator != null)
-				MessageGenerator = messageGenerator;
-			else
-				MessageGenerator = new RazorMessageGenerator();
-
-
-			if (sendEmailProvider != null)
-				SendEmailProvider = sendEmailProvider;
-			else
-				SendEmailProvider = new SmtpSendEmailProvider();
+			MessageSettingsProvider = settingsProvider ?? new DefaultMessageSettingsProvider();
+			MessageGenerator = messageGenerator ?? new RazorMessageGenerator();
+			SendEmailProvider = sendEmailProvider ?? new SmtpSendEmailProvider();
 		}
 
 
@@ -91,6 +78,27 @@ namespace RazorEmailCore
 		}
 
 		/// <summary>
+		/// Generate an email asynchroniously based off a Razor template and sends the email.
+		/// </summary>
+		/// <param name="sendTo">The email address of the person to send the email to</param>
+		/// <param name="templateName">The name of the template directory</param>
+		/// <param name="model">The model to pass into the template</param>
+		/// <exception cref="RazorEmailCoreConfigurationException">Invalid Configuration Exception</exception>
+		/// <exception cref="MessageGenerationException">Error in razor template, message generation failed.</exception>
+		/// <exception cref="SmtpException">Error sending the mail message</exception>
+		public Task CreateAndSendEmailAsync(EmailAddress sendTo, string templateName, object model)
+		{
+			Email message = CreateEmail(templateName, model);
+			message.To.Add(sendTo);
+
+			if (!message.MessageComplete)
+				throw new RazorEmailCoreException("Message is incomplete and cannot be sent.");
+
+			return SendEmailProvider.SendMessageAsync(message, Config);
+		}
+
+
+		/// <summary>
 		/// Sends an email message using the settings configured via the email generation.
 		/// </summary>
 		/// <param name="message">The message to send</param>
@@ -98,6 +106,17 @@ namespace RazorEmailCore
 		public void SendEmail(Email message)
 		{
 			SendEmailProvider.SendMessage(message, Config);
+		}
+
+
+		/// <summary>
+		/// Sends an email message asynchroniously using the settings configured via the email generation.
+		/// </summary>
+		/// <param name="message">The message to send</param>
+		/// <exception cref="SmtpException">Error sending the mail message</exception>
+		public Task SendEmailAsync(Email message)
+		{
+			return SendEmailProvider.SendMessageAsync(message, Config);
 		}
 	}
 }

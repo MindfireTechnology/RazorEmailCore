@@ -46,7 +46,15 @@ namespace Example
 			Console.WriteLine("Message sent successfully!");
 
 
+
+			// Async Example
+			/*await*/
+			new RazorEmail().CreateAndSendEmailAsync("nate.zaugg@somedomain.com", "NewUserTemplace", new { Name = "Nate Zaugg" });
+
+
 			Console.ReadLine();
+
+
 		}
 	}
 }

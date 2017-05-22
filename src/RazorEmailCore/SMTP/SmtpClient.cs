@@ -27,81 +27,84 @@ namespace RazorEmailCore.SMTP
 			Password = password;
 		}
 
-		public virtual bool SendMessage(Email message)
+		public virtual void SendMessage(Email message)
+		{
+			SendMessageAsync(message).Wait();
+		}
+
+		public virtual async Task SendMessageAsync(Email message)
 		{
 			var uri = new Uri(Server);
 			using (socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP))
 			{
-				socket.Connect(uri.Host, uri.Port == -1 ? 25 : uri.Port);
+				await socket.ConnectAsync(uri.Host, uri.Port == -1 ? 25 : uri.Port);
 
 				// 220 smtp.whatever.com ESMTP
-				string response = ReceiveMessage();
-				CheckMessageStatus(response);
+				CheckMessageStatus(await ReceiveMessageAsync());
 
 				// HELO mydomain.com
-				Send($"HELO {HostName ?? Environment.MachineName}\r\n");
-				CheckMessageStatus(ReceiveMessage());
+				await SendAsync($"HELO {HostName ?? Environment.MachineName}\r\n");
+				CheckMessageStatus(await ReceiveMessageAsync());
 
 				// Auth Login
 				if (!string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password))
 				{
-					Send("AUTH LOGIN\r\n");
-					CheckMessageStatus(ReceiveMessage(), "334");
+					await SendAsync("AUTH LOGIN\r\n");
+					CheckMessageStatus(await ReceiveMessageAsync(), "334");
 
-					Send(Convert.ToBase64String(Encoding.UTF8.GetBytes(Username)) + "\r\n");
-					CheckMessageStatus(ReceiveMessage(), "334");
+					await SendAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(Username)) + "\r\n");
+					CheckMessageStatus(await ReceiveMessageAsync(), "334");
 
-					Send(Convert.ToBase64String(Encoding.UTF8.GetBytes(Password)) + "\r\n");
-					CheckMessageStatus(ReceiveMessage());
+					await SendAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(Password)) + "\r\n");
+					CheckMessageStatus(await ReceiveMessageAsync());
 				}
 
 				// MAIL FROM
-				Send($"MAIL FROM: {message.Sender.Email}\r\n");
-				CheckMessageStatus(ReceiveMessage());
+				await SendAsync($"MAIL FROM: {message.Sender.Email}\r\n");
+				CheckMessageStatus(await ReceiveMessageAsync());
 
 				// RCPT TO
 				foreach (EmailAddress address in message.To.Concat(message.Cc).Concat(message.Bcc).Distinct())
 				{
-					Send($"RCPT TO: {address.Email}\r\n");
-					CheckMessageStatus(ReceiveMessage());
+					await SendAsync($"RCPT TO: {address.Email}\r\n");
+					CheckMessageStatus(await ReceiveMessageAsync());
 				}
 
 				// DATA
-				Send("DATA\r\n");
-				CheckMessageStatus(ReceiveMessage(), "354");
+				await SendAsync("DATA\r\n");
+				CheckMessageStatus(await ReceiveMessageAsync(), "354");
 
 				// Send Headers
-				SendMessageHeaders(message);
+				await SendMessageHeadersAsync(message);
 
 				// Send Message Body
-				SendMessageBody(message);
+				await SendMessageBodyAsync(message);
 
 				// Send CRLF.CRLF
-				Send("\r\n.\r\n");
-				CheckMessageStatus(ReceiveMessage());
+				await SendAsync("\r\n.\r\n");
+				CheckMessageStatus(await ReceiveMessageAsync());
 
 				// QUIT
-				Send("QUIT\r\n");
-
-				return true;
+				await SendAsync("QUIT\r\n");
 			}
 		}
-		private void SendMessageHeaders(Email message)
+
+		protected async Task SendMessageHeadersAsync(Email message)
 		{
-			Send($"FROM: {message.Sender}\r\n");
+			await SendAsync($"FROM: {message.Sender}\r\n");
 			string recipients = string.Join("; ", message.To);
-			Send($"TO: {recipients}\r\n");
+			await SendAsync($"TO: {recipients}\r\n");
 			recipients = string.Join("; ", message.Cc);
-			Send($"Cc: {recipients}\r\n");
-			Send($"Date: {DateTime.Now.ToUniversalTime()}\r\n");
-			Send($"Subject: {message.Subject}\r\n");
-			Send($"X-Mailer: RazorEmailCore\r\n");
-			Send($"MIME-Version: 1.0\r\n");
-			Send($"Content-Type: multipart/alternative; boundary=\"XxxxBoundaryText{message.GetHashCode()}\"\r\n");
-			Send("\r\n"); // Done with headers
+			await SendAsync($"Cc: {recipients}\r\n");
+			await SendAsync($"Date: {DateTime.Now.ToUniversalTime()}\r\n");
+			await SendAsync($"Subject: {message.Subject}\r\n");
+			await SendAsync($"X-Mailer: RazorEmailCore\r\n");
+			await SendAsync($"MIME-Version: 1.0\r\n");
+			await SendAsync($"Content-Type: multipart/alternative; boundary=\"XxxxBoundaryText{message.GetHashCode()}\"\r\n");
+			await SendAsync("\r\n"); // Done with headers
 		}
 
-		private void SendMessageBody(Email message)
+		protected async Task SendMessageBodyAsync(Email message)
 		{
 			//Send("This is a multipart message in MIME format.\r\n");
 
@@ -109,50 +112,50 @@ namespace RazorEmailCore.SMTP
 			if (!string.IsNullOrWhiteSpace(message.PlainTextBody))
 			{
 				// Send begin content boundary
-				Send($"--XxxxBoundaryText{message.GetHashCode()}\r\n");
-				Send($"Content-Type: text/plain; charset=\"utf-8\"\r\n");
-				Send($"Content-Transfer-Encoding: 8bit\r\n");
-				Send("\r\n"); // End headers
+				await SendAsync($"--XxxxBoundaryText{message.GetHashCode()}\r\n");
+				await SendAsync($"Content-Type: text/plain; charset=\"utf-8\"\r\n");
+				await SendAsync($"Content-Transfer-Encoding: 8bit\r\n");
+				await SendAsync("\r\n"); // End headers
 
-				Send(message.PlainTextBody);
+				await SendAsync(message.PlainTextBody);
 			}
 
 			if (!string.IsNullOrWhiteSpace(message.HtmlBody))
 			{
 				// Send begin content boundary
-				Send($"--XxxxBoundaryText{message.GetHashCode()}\r\n");
-				Send($"Content-Type: text/html; charset=\"utf-8\"\r\n");
-				Send($"Content-Transfer-Encoding: 8bit\r\n");
-				Send("\r\n"); // End headers
+				await SendAsync($"--XxxxBoundaryText{message.GetHashCode()}\r\n");
+				await SendAsync($"Content-Type: text/html; charset=\"utf-8\"\r\n");
+				await SendAsync($"Content-Transfer-Encoding: 8bit\r\n");
+				await SendAsync("\r\n"); // End headers
 
-				Send(message.HtmlBody);
+				await SendAsync(message.HtmlBody);
 			}
 
 			// Send End Content Boundary
-			Send("\r\n");
-			Send($"--XxxxBoundaryText{message.GetHashCode()}--\r\n");
+			await SendAsync("\r\n");
+			await SendAsync($"--XxxxBoundaryText{message.GetHashCode()}--\r\n");
 		}
 
-
-		private void Send(string value)
-		{
-			Debug.WriteLine($"SENDING --> {value.Replace("\r", "\\r").Replace("\n", "\\n")}");
-			socket.Send(Encoding.UTF8.GetBytes(value));
-		}
-
-		private void CheckMessageStatus(string response, string expectedCode = "2")
+		protected void CheckMessageStatus(string response, string expectedCode = "2")
 		{
 			if (!response.StartsWith(expectedCode))
 				throw new SmtpException($"Received SMTP Error: {response}");
 		}
 
-		public string ReceiveMessage()
+		protected Task SendAsync(string value)
+		{
+			Debug.WriteLine($"SENDING  --> {value.Replace("\r", "\\r").Replace("\n", "\\n")}");
+			return socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(value)), SocketFlags.None);
+		}
+
+		protected async Task<string> ReceiveMessageAsync()
 		{
 			byte[] buffer = new byte[2048];
-			int read = socket.Receive(buffer);
+			var array = new ArraySegment<byte>(buffer);
+			int read = await socket.ReceiveAsync(array, SocketFlags.None);
 
 			string result = Encoding.UTF8.GetString(buffer, 0, read);
-			Debug.WriteLine($"RECEIVED<-- {result.Replace("\r", "\\r").Replace("\n", "\\n")}");
+			Debug.WriteLine($"RECEIVED <-- {result.Replace("\r", "\\r").Replace("\n", "\\n")}");
 			return result;
 		}
 	}
