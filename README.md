@@ -130,7 +130,7 @@ It is given the template text and the model and returns the generated output.
 
 **Note: The default option for this class is the built-in `RazorMessageGenerator` class which makes use of the `RazorLight` library**
 
-###ISendEmailProvider###
+### ISendEmailProvider ###
 This class sends the `Email` object based on the config settings collected by the `IMessageSettingsProvider` class. 
 
 **Note: The default option for this class is the built-in `SmtpSendEmailProvider` class which is a very simple SMTP client
