@@ -1,7 +1,7 @@
 # RazorEmailCore
 Use Razor syntax to write emails, compatible with .NET Core.
 
-## Basic Usag e##
+## Basic Usage ##
 
 ### Required Configuration ###
 DotNet Core only allows reflection on projects that have the `preserveCompilationContext` enabled. This is a requirement
