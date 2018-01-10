@@ -68,6 +68,19 @@ razoremail.CreateAndSendEmail("nate.zaugg@SomeDomain.com", "NewUserTemplate",
 Console.WriteLine("Message sent successfully!");
 ```
 
+// {BaseTemplatePath}/NewUserTemplate/NewUserTamplate.razor
+```
+<h1>Hello @Model.Name!</h1>
+<p>We're pleased you have decided to sign up with us today...</p>
+```
+
+// {BaseTemplatePath}/NewUserTemplate/NewUserTamplate.text
+```
+Hello @Model.Name!
+
+We're pleased you have decided to sign up with us today...
+```
+
 You may also generate the message and then send it later (example with error handling):
 
 ```
