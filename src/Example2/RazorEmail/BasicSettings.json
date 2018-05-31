@@ -1,0 +1,9 @@
+{
+	"from": "\"RazorEmailCore\" <donotreply@SomeDomain.com>",
+	"cc": "",
+	"bcc": "nate@SomeDomain.com",
+
+	"server": "smtp://smtp.sendgrid.net:587",
+	"username": "",
+	"password": ""
+}
