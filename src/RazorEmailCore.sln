@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorEmailCore", "RazorEmai
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example", "Example\Example.csproj", "{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorEmailCore2", "RazorEmailCore2\RazorEmailCore2.csproj", "{43EC5CAA-FC3A-421B-86C9-9899012B2F0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example2", "Example2\Example2.csproj", "{3277611D-417E-4D32-83BC-B992711AD7BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,8 +31,19 @@ Global
 		{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E034082-AEBB-4F46-BAAE-B44E0ABE7C4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43EC5CAA-FC3A-421B-86C9-9899012B2F0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43EC5CAA-FC3A-421B-86C9-9899012B2F0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43EC5CAA-FC3A-421B-86C9-9899012B2F0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43EC5CAA-FC3A-421B-86C9-9899012B2F0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3277611D-417E-4D32-83BC-B992711AD7BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3277611D-417E-4D32-83BC-B992711AD7BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3277611D-417E-4D32-83BC-B992711AD7BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3277611D-417E-4D32-83BC-B992711AD7BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {35343C3A-FC78-46F5-A585-4E8402E7BB7A}
 	EndGlobalSection
 EndGlobal

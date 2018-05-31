@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Example2": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "BaseTemplatePath": "..\\..\\..\\..\\Example\\RazorEmail"
+      }
+    }
+  }
+}
