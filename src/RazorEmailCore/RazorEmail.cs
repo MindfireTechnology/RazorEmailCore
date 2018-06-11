@@ -38,16 +38,14 @@ namespace RazorEmailCore
 		/// <exception cref="MessageGenerationException">Error in razor template, message generation failed.</exception>
 		public virtual Email CreateEmail(string templateName, object model)
 		{
-			Config = MessageSettingsProvider.LoadByTemplateName(templateName);
-
 			string htmlMessage = null;
 			string textMessage = null;
 
 			if (!string.IsNullOrWhiteSpace(Config.HtmlEmailTemplate))
-				htmlMessage = MessageGenerator.GenerateMessageBody(Config.HtmlEmailTemplate, model);
+				htmlMessage = MessageGenerator.GenerateHtmlMessageBody(MessageSettingsProvider.BasePath, Config.HtmlEmailTemplate, model);
 
 			if (!string.IsNullOrWhiteSpace(Config.PlainTextEmailTemplate))
-				textMessage = MessageGenerator.GenerateMessageBody(Config.PlainTextEmailTemplate, model);
+				textMessage = MessageGenerator.GenerateTextMessageBody(MessageSettingsProvider.BasePath, Config.PlainTextEmailTemplate, model);
 
 			var result = new Email { HtmlBody = htmlMessage, PlainTextBody = textMessage, Subject = Config.Subject, Sender = Config.From };
 

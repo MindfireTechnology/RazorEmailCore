@@ -10,6 +10,8 @@ namespace RazorEmailCore
 	/// </summary>
 	public interface IMessageSettingsProvider
 	{
+		string BasePath { get; set; }
+
 		/// <summary>
 		/// Retreives the config settings based on the template name
 		/// </summary>

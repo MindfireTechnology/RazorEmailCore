@@ -31,22 +31,41 @@ namespace RazorEmailCore
 {
 	public class RazorMessageGenerator : IMessageGenerator
 	{
+		protected static readonly string TextExtension = ".text";
+		protected static readonly string HtmlExtension = ".cshtml";
 
-		public string GenerateMessageBody(string basePath, string templateName, object model)
+		public string GenerateHtmlMessageBody(string basePath, string templateName, object model) => GenerateMessageBody(basePath, templateName, HtmlExtension, model);
+		public string GenerateHtmlMessageBody<T>(string basePath, string templateName, T model) => GenerateMessageBody<T>(basePath, templateName, HtmlExtension, model);
+		public string GenerateTextMessageBody(string basePath, string templateName, object model) => GenerateMessageBody(basePath, templateName, TextExtension, model);
+		public string GenerateTextMessageBody<T>(string basePath, string templateName, T model) => GenerateMessageBody<T>(basePath, templateName, TextExtension, model);
+
+		public string GenerateMessageBody<T>(string basePath, string templateName, string extension, T model)
 		{
-			throw new NotImplementedException();
+			var viewDataDictionary = new ViewDataDictionary<T>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+			{
+				Model = model
+			};
+
+			return GenerateMessageBody(basePath, templateName, extension, viewDataDictionary);
 		}
 
-		public string GenerateMessageBody<T>(string basePath, string templateName, T model)
+		public static string GenerateMessageBody(string basePath, string templateName, string extension, object model)
 		{
-			throw new NotImplementedException();
+			// Create a generic object
+			var vc = typeof(ViewDataDictionary<>);
+			var vcm = vc.MakeGenericType(model.GetType());
+			var viewDataDictionary = Activator.CreateInstance(vcm, new object[] { new EmptyModelMetadataProvider(), new ModelStateDictionary() });
+
+			viewDataDictionary.GetType().GetProperties().Single(n => n.Name == "Model" && n.PropertyType != typeof(object)).SetValue(viewDataDictionary, model);
+
+			return GenerateMessageBody(basePath, templateName, extension, (ViewDataDictionary)viewDataDictionary);
 		}
 
-		public string GenerateMessageBody(string template, object model)
+		protected static string GenerateMessageBody(string basePath, string templateName, string extension, ViewDataDictionary viewDataDictionary)
 		{
-			string viewName = "EmailTemplate"; // @"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views\EmailTemplate.cshtml"; // @"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views";
-
 			var scopeFactory = InitializeServices();
+			var viewName = Path.Combine(basePath, Path.ChangeExtension(templateName, extension));
+
 			using (var serviceScope = scopeFactory.CreateScope())
 			{
 				var razorViewEngine = serviceScope.ServiceProvider.GetService<IRazorViewEngine>();
@@ -57,23 +76,10 @@ namespace RazorEmailCore
 
 				using (var output = new StringWriter())
 				{
-					// Create a generic object
-					var vc = typeof(ViewDataDictionary<>);
-					var vcm = vc.MakeGenericType(model.GetType());
-					var viewDataDictionary = Activator.CreateInstance(vcm, new object[] { new EmptyModelMetadataProvider(), new ModelStateDictionary() });
-
-					viewDataDictionary.GetType().GetProperties().Single(n => n.Name == "Model" && n.PropertyType != typeof(object)).SetValue(viewDataDictionary, model);
-
 					var viewContext = new ViewContext(
 						actionContext,
 						view,
-						(ViewDataDictionary)viewDataDictionary,
-						//new ViewDataDictionary(
-						//	metadataProvider: new EmptyModelMetadataProvider(),
-						//	modelState: new ModelStateDictionary())
-						//{
-						//	Model = model
-						//},
+						viewDataDictionary,
 						new TempDataDictionary(
 							actionContext.HttpContext,
 							templateDataProvider),
@@ -87,7 +93,7 @@ namespace RazorEmailCore
 			}
 		}
 
-		private IServiceScopeFactory InitializeServices()
+		private static IServiceScopeFactory InitializeServices()
 		{
 			// Initialize the necessary services
 			var services = new ServiceCollection();
@@ -98,7 +104,14 @@ namespace RazorEmailCore
 			return serviceProvider.GetRequiredService<IServiceScopeFactory>();
 		}
 
-		private IView FindView(IRazorViewEngine viewEngine, ActionContext actionContext, string viewName)
+		/// <summary>
+		/// Find and instance the specified view with the Razor engine
+		/// </summary>
+		/// <param name="viewEngine">The Razor engine to use</param>
+		/// <param name="actionContext"></param>
+		/// <param name="viewName">The path to the desired view</param>
+		/// <returns></returns>
+		private static IView FindView(IRazorViewEngine viewEngine, ActionContext actionContext, string viewName)
 		{
 			var getViewResult = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
 			if (getViewResult.Success)
@@ -120,10 +133,12 @@ namespace RazorEmailCore
 			throw new InvalidOperationException(errorMessage);
 		}
 
-		private ActionContext GetActionContext(IServiceProvider serviceProvider)
+		private static ActionContext GetActionContext(IServiceProvider serviceProvider)
 		{
-			var httpContext = new DefaultHttpContext();
-			httpContext.RequestServices = serviceProvider;
+			var httpContext = new DefaultHttpContext
+			{
+				RequestServices = serviceProvider
+			};
 			return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 		}
 
@@ -171,14 +186,14 @@ namespace RazorEmailCore
 			});
 		}
 
-		private IHostingEnvironment GetHostingEnvironment(IServiceProvider services)
-		{
-			return new RazorEmailHostingEnvironment
-			{
-				WebRootFileProvider = new PhysicalFileProvider(@"D:\Projects\RazorEmailCore\src\Example2\RazorEmail\NewUserTemplate"),
-				ContentRootFileProvider = new PhysicalFileProvider(@"D:\Projects\RazorEmailCore\src\Example2\RazorEmail\NewUserTemplate")
-			};
-		}
+		//private IHostingEnvironment GetHostingEnvironment(IServiceProvider services)
+		//{
+		//	return new RazorEmailHostingEnvironment
+		//	{
+		//		WebRootFileProvider = new PhysicalFileProvider(@"D:\Projects\RazorEmailCore\src\Example2\RazorEmail\NewUserTemplate"),
+		//		ContentRootFileProvider = new PhysicalFileProvider(@"D:\Projects\RazorEmailCore\src\Example2\RazorEmail\NewUserTemplate")
+		//	};
+		//}
 
 	}
 
