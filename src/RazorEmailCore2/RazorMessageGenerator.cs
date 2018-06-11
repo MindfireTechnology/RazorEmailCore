@@ -24,26 +24,151 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.ObjectPool;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 
 namespace RazorEmailCore
 {
 	public class RazorMessageGenerator : IMessageGenerator
 	{
+
+		public string GenerateMessageBody(string basePath, string templateName, object model)
+		{
+			throw new NotImplementedException();
+		}
+
+		public string GenerateMessageBody<T>(string basePath, string templateName, T model)
+		{
+			throw new NotImplementedException();
+		}
+
 		public string GenerateMessageBody(string template, object model)
 		{
-			IServiceCollection services = new ServiceCollection();
-			services.AddMvc();
-			services.AddTransient<ILoggerFactory, LoggerFactory>();
-			services.AddSingleton<IHostingEnvironment>(n => GetHostingEnvironment(n));
+			string viewName = "EmailTemplate"; // @"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views\EmailTemplate.cshtml"; // @"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views";
+
+			var scopeFactory = InitializeServices();
+			using (var serviceScope = scopeFactory.CreateScope())
+			{
+				var razorViewEngine = serviceScope.ServiceProvider.GetService<IRazorViewEngine>();
+				var templateDataProvider = serviceScope.ServiceProvider.GetService<ITempDataProvider>();
+
+				var actionContext = GetActionContext(serviceScope.ServiceProvider);
+				var view = FindView(razorViewEngine, actionContext, viewName);
+
+				using (var output = new StringWriter())
+				{
+					// Create a generic object
+					var vc = typeof(ViewDataDictionary<>);
+					var vcm = vc.MakeGenericType(model.GetType());
+					var viewDataDictionary = Activator.CreateInstance(vcm, new object[] { new EmptyModelMetadataProvider(), new ModelStateDictionary() });
+
+					viewDataDictionary.GetType().GetProperties().Single(n => n.Name == "Model" && n.PropertyType != typeof(object)).SetValue(viewDataDictionary, model);
+
+					var viewContext = new ViewContext(
+						actionContext,
+						view,
+						(ViewDataDictionary)viewDataDictionary,
+						//new ViewDataDictionary(
+						//	metadataProvider: new EmptyModelMetadataProvider(),
+						//	modelState: new ModelStateDictionary())
+						//{
+						//	Model = model
+						//},
+						new TempDataDictionary(
+							actionContext.HttpContext,
+							templateDataProvider),
+						output,
+						new HtmlHelperOptions());
+
+					view.RenderAsync(viewContext).Wait();
+
+					return output.ToString();
+				}
+			}
+		}
+
+		private IServiceScopeFactory InitializeServices()
+		{
+			// Initialize the necessary services
+			var services = new ServiceCollection();
+			ConfigureDefaultServices(services, customApplicationBasePath: null); // @"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views");
+
+
+			var serviceProvider = services.BuildServiceProvider();
+			return serviceProvider.GetRequiredService<IServiceScopeFactory>();
+		}
+
+		private IView FindView(IRazorViewEngine viewEngine, ActionContext actionContext, string viewName)
+		{
+			var getViewResult = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
+			if (getViewResult.Success)
+			{
+				return getViewResult.View;
+			}
+
+			var findViewResult = viewEngine.FindView(actionContext, viewName, isMainPage: true);
+			if (findViewResult.Success)
+			{
+				return findViewResult.View;
+			}
+
+			var searchedLocations = getViewResult.SearchedLocations.Concat(findViewResult.SearchedLocations);
+			var errorMessage = string.Join(
+				Environment.NewLine,
+				new[] { $"Unable to find view '{viewName}'. The following locations were searched:" }.Concat(searchedLocations)); ;
+
+			throw new InvalidOperationException(errorMessage);
+		}
+
+		private ActionContext GetActionContext(IServiceProvider serviceProvider)
+		{
+			var httpContext = new DefaultHttpContext();
+			httpContext.RequestServices = serviceProvider;
+			return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+		}
+
+		private static void ConfigureDefaultServices(IServiceCollection services, string customApplicationBasePath)
+		{
+			string applicationName;
+			IFileProvider fileProvider;
+			if (!string.IsNullOrEmpty(customApplicationBasePath))
+			{
+				applicationName = Path.GetFileName(customApplicationBasePath);
+				fileProvider = new PhysicalFileProvider(customApplicationBasePath);
+			}
+			else
+			{
+				applicationName = Assembly.GetEntryAssembly().GetName().Name;
+				fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\.."));
+			}
+
+			services.AddSingleton<IHostingEnvironment>(new HostingEnvironment
+			{
+				ApplicationName = applicationName,
+				WebRootFileProvider = fileProvider,
+			});
+			services.Configure<RazorViewEngineOptions>(options =>
+			{
+				options.FileProviders.Clear();
+				options.FileProviders.Add(fileProvider);
+			});
+			var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
 			services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-			services.AddSingleton<DiagnosticSource, RazorEmailDiagnosticListener>();
-			services.AddScoped<IViewRender, ViewRender>();
-			var provider = services.BuildServiceProvider();
+			services.AddSingleton<DiagnosticSource>(diagnosticSource);
+			services.AddLogging();
+			services.AddMvc();
 
-			var render = provider.GetService<IViewRender>();
-			return render.RenderAsync("NewUserTemplate", model).Result;
 
-			// 'Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions.FileProviders' must not be empty. At least one 'Microsoft.Extensions.FileProviders.IFileProvider' is required to locate a view for rendering.
+
+			services.Configure<RazorViewEngineOptions>(options =>
+			{
+				//options.ViewLocationFormats.Add(@"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views\{0}.cshtml");
+				options.ViewLocationFormats.Clear();
+				options.ViewLocationFormats.Add(@"{0}.cshtml");
+				options.ViewLocationFormats.Add(@"~/{0}.cshtml");
+				options.ViewLocationFormats.Add(@"~/RazorEmail/{0}.cshtml");
+				options.ViewLocationFormats.Add(@"~/RazorEmail/Views/{0}.cshtml");
+			});
 		}
 
 		private IHostingEnvironment GetHostingEnvironment(IServiceProvider services)
@@ -54,6 +179,7 @@ namespace RazorEmailCore
 				ContentRootFileProvider = new PhysicalFileProvider(@"D:\Projects\RazorEmailCore\src\Example2\RazorEmail\NewUserTemplate")
 			};
 		}
+
 	}
 
 	public class RazorEmailHostingEnvironment : Microsoft.AspNetCore.Hosting.IHostingEnvironment

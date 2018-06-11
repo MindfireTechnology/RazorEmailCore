@@ -16,6 +16,14 @@ namespace RazorEmailCore
 		/// <param name="template">The template markup as a string</param>
 		/// <param name="model">The model to use to generate the markup</param>
 		/// <returns>The generated message</returns>
-		string GenerateMessageBody(string template, object model);
+		string GenerateMessageBody(string basePath, string templateName, object model);
+
+		/// <summary>
+		/// Create the message based on the given template text and model.
+		/// </summary>
+		/// <param name="template">The template markup as a string</param>
+		/// <param name="model">The model to use to generate the markup</param>
+		/// <returns>The generated message</returns>
+		string GenerateMessageBody<T>(string basePath, string templateName, T model);
 	}
 }
