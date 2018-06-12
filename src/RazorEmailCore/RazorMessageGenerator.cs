@@ -27,7 +27,7 @@ namespace RazorEmailCore
 			string result = null;
 			try
 			{
-				string template = File.ReadAllText(Path.Combine(basePath, Path.ChangeExtension(templateName, extension)));
+				var template = File.ReadAllText(Path.Combine(basePath, templateName, Path.ChangeExtension(templateName, extension)));
 
 				var engine = EngineFactory.CreateEmbedded(model.GetType());
 
