@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Compile Include="..\RazorEmailCore\ConfigSettings.cs" Link="ConfigSettings.cs" />
-    <Compile Include="..\RazorEmailCore\DefaultMessageSettingsProvider.cs" Link="DefaultMessageSettingsProvider.cs" />
     <Compile Include="..\RazorEmailCore\Email.cs" Link="Email.cs" />
     <Compile Include="..\RazorEmailCore\EmailAddress.cs" Link="EmailAddress.cs" />
     <Compile Include="..\RazorEmailCore\IMessageGenerator.cs" Link="IMessageGenerator.cs" />
@@ -22,6 +21,7 @@
     <Compile Include="..\RazorEmailCore\SmtpSendEmailProvider.cs" Link="SmtpSendEmailProvider.cs" />
     <Compile Include="..\RazorEmailCore\SMTP\SmtpClient.cs" Link="SMTP\SmtpClient.cs" />
     <Compile Include="..\RazorEmailCore\SMTP\SmtpException.cs" Link="SMTP\SmtpException.cs" />
+	<Compile Include="..\RazorEmailCore\DefaultMessageSettingsProvider.cs" Link="DefaultMessageSettingsProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>

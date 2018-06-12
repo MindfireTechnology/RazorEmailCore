@@ -26,79 +26,179 @@ using Microsoft.Extensions.ObjectPool;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
+using System.Text.Encodings.Web;
 
 namespace RazorEmailCore
 {
 	public class RazorMessageGenerator : IMessageGenerator
 	{
+		protected static readonly string TextExtension = ".text";
+		protected static readonly string HtmlExtension = ".cshtml";
 
-		public string GenerateMessageBody(string basePath, string templateName, object model)
+		public string GenerateHtmlMessageBody(string basePath, string templateName, object model) => GetHtmlView(basePath, templateName, CreateViewDataDictionary(model));
+		public string GenerateHtmlMessageBody<T>(string basePath, string templateName, T model) => GetHtmlView(basePath, templateName, CreateViewDataDictionary<T>(model));
+		public string GenerateTextMessageBody(string basePath, string templateName, object model) => GetTextView(templateName, CreateViewDataDictionary(model));
+		public string GenerateTextMessageBody<T>(string basePath, string templateName, T model) => GetTextView(templateName, CreateViewDataDictionary<T>(model));
+
+		public static string GenerateMessageBody(IView view, ViewDataDictionary viewDataDictionary, ActionContext actionContext, ITempDataProvider templateDataProvider)
 		{
-			throw new NotImplementedException();
+			using (var output = new StringWriter())
+			{
+				var viewContext = new ViewContext(
+					actionContext,
+					view,
+					viewDataDictionary,
+					new TempDataDictionary(
+						actionContext.HttpContext,
+						templateDataProvider),
+					output,
+					new HtmlHelperOptions());
+
+				view.RenderAsync(viewContext).Wait();
+
+				return output.ToString();
+			}
 		}
 
-		public string GenerateMessageBody<T>(string basePath, string templateName, T model)
+		protected static string GetTextView(string templateName, ViewDataDictionary viewDataDictionary)
 		{
-			throw new NotImplementedException();
-		}
-
-		public string GenerateMessageBody(string template, object model)
-		{
-			string viewName = "EmailTemplate"; // @"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views\EmailTemplate.cshtml"; // @"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views";
-
 			var scopeFactory = InitializeServices();
+
+			using (var serviceScope = scopeFactory.CreateScope())
+			{
+				var razorViewEngine = serviceScope.ServiceProvider.GetService<IRazorViewEngine>();
+				var templateDataProvider = serviceScope.ServiceProvider.GetService<ITempDataProvider>();
+				var pageActivator = serviceScope.ServiceProvider.GetService<IRazorPageActivator>();
+				var pageFactory = serviceScope.ServiceProvider.GetService<IRazorPageFactoryProvider>();
+				var htmlEncoder = serviceScope.ServiceProvider.GetService<HtmlEncoder>();
+				var diagnosticSource = serviceScope.ServiceProvider.GetService<DiagnosticSource>();
+
+				var emptyPath = $@"RazorEmail\{templateName}\{templateName}.text";
+				var viewsPath = $@"RazorEmail\{templateName}\Views\{templateName}.text";
+
+				var razorPageFactory = pageFactory.CreateFactory(emptyPath).RazorPageFactory;
+
+				if (razorPageFactory == null)
+				{
+					razorPageFactory = pageFactory.CreateFactory(viewsPath).RazorPageFactory;
+
+					if (razorPageFactory == null)
+						throw new InvalidOperationException($"Unable to find view '{templateName}'. The following locations were searched: {emptyPath}\n{viewsPath}");
+				}
+
+				IRazorPage page = razorPageFactory.Invoke();
+
+				IView view = new RazorView(razorViewEngine, pageActivator, new List<IRazorPage>(), page, htmlEncoder, diagnosticSource);
+
+
+				var actionContext = GetActionContext(serviceScope.ServiceProvider);
+
+				return GenerateMessageBody(view, viewDataDictionary, actionContext, templateDataProvider);
+			}
+		}
+
+		protected static string GetHtmlView(string basePath, string templateName, ViewDataDictionary viewDataDictionary)
+		{
+			var scopeFactory = InitializeServices();
+
 			using (var serviceScope = scopeFactory.CreateScope())
 			{
 				var razorViewEngine = serviceScope.ServiceProvider.GetService<IRazorViewEngine>();
 				var templateDataProvider = serviceScope.ServiceProvider.GetService<ITempDataProvider>();
 
 				var actionContext = GetActionContext(serviceScope.ServiceProvider);
-				var view = FindView(razorViewEngine, actionContext, viewName);
 
-				using (var output = new StringWriter())
+
+				IView view = null;
+
+				var messages = new List<string>();
+				var extension = ".cshtml";
+
+				var viewName = Path.Combine(basePath, templateName, Path.ChangeExtension(templateName, extension));
+				var viewNameInViews = Path.Combine(basePath, templateName, "Views", Path.ChangeExtension(templateName, extension));
+
+				// Try to get the view with the exact name
+				// It could be in this folder or in the "Views" folder, so we need to try twice
+				var result = LoadView(viewName, out view);
+
+				if (!result.success)
 				{
-					// Create a generic object
-					var vc = typeof(ViewDataDictionary<>);
-					var vcm = vc.MakeGenericType(model.GetType());
-					var viewDataDictionary = Activator.CreateInstance(vcm, new object[] { new EmptyModelMetadataProvider(), new ModelStateDictionary() });
+					messages.Add(result.message);
+					result = LoadView(viewNameInViews, out view);
 
-					viewDataDictionary.GetType().GetProperties().Single(n => n.Name == "Model" && n.PropertyType != typeof(object)).SetValue(viewDataDictionary, model);
+					if (!result.success)
+					{
+						messages.Add(result.message);
 
-					var viewContext = new ViewContext(
-						actionContext,
-						view,
-						(ViewDataDictionary)viewDataDictionary,
-						//new ViewDataDictionary(
-						//	metadataProvider: new EmptyModelMetadataProvider(),
-						//	modelState: new ModelStateDictionary())
-						//{
-						//	Model = model
-						//},
-						new TempDataDictionary(
-							actionContext.HttpContext,
-							templateDataProvider),
-						output,
-						new HtmlHelperOptions());
+						// Didn't find it with the full path, so let Razor do its ting
+						result = LoadView(templateName, out view);
 
-					view.RenderAsync(viewContext).Wait();
+						if (!result.success)
+						{
+							throw new InvalidOperationException(string.Join(Environment.NewLine, messages));
+						}
+					}
+				}
 
-					return output.ToString();
+				return GenerateMessageBody(view, viewDataDictionary, actionContext, templateDataProvider);
+
+				(string message, bool success) LoadView(string name, out IView viewInstance)
+				{
+					viewInstance = null;
+
+					try
+					{
+						view = FindView(razorViewEngine, actionContext, name);
+						return (string.Empty, true);
+					}
+					catch (InvalidOperationException ioe)
+					{
+						return (ioe.Message, false);
+					}
 				}
 			}
+
 		}
 
-		private IServiceScopeFactory InitializeServices()
+		protected static ViewDataDictionary CreateViewDataDictionary<T>(T model)
+		{
+			var viewDataDictionary = new ViewDataDictionary<T>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+			{
+				Model = model
+			};
+
+			return viewDataDictionary;
+		}
+
+		protected static ViewDataDictionary CreateViewDataDictionary(object model)
+		{
+			var vc = typeof(ViewDataDictionary<>);
+			var vcm = vc.MakeGenericType(model.GetType());
+			var viewDataDictionary = Activator.CreateInstance(vcm, new object[] { new EmptyModelMetadataProvider(), new ModelStateDictionary() });
+
+			viewDataDictionary.GetType().GetProperties().Single(n => n.Name == "Model" && n.PropertyType != typeof(object)).SetValue(viewDataDictionary, model);
+
+			return (ViewDataDictionary)viewDataDictionary;
+		}
+
+		private static IServiceScopeFactory InitializeServices()
 		{
 			// Initialize the necessary services
 			var services = new ServiceCollection();
-			ConfigureDefaultServices(services, customApplicationBasePath: null); // @"D:\Projects\Entropy\samples\Mvc.RenderViewToString\Views");
-
+			ConfigureDefaultServices(services, customApplicationBasePath: null);
 
 			var serviceProvider = services.BuildServiceProvider();
 			return serviceProvider.GetRequiredService<IServiceScopeFactory>();
 		}
 
-		private IView FindView(IRazorViewEngine viewEngine, ActionContext actionContext, string viewName)
+		/// <summary>
+		/// Find and instance the specified view with the Razor engine
+		/// </summary>
+		/// <param name="viewEngine">The Razor engine to use</param>
+		/// <param name="actionContext"></param>
+		/// <param name="viewName">The path to the desired view</param>
+		/// <returns></returns>
+		private static IView FindView(IRazorViewEngine viewEngine, ActionContext actionContext, string viewName)
 		{
 			var getViewResult = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
 			if (getViewResult.Success)
@@ -115,15 +215,17 @@ namespace RazorEmailCore
 			var searchedLocations = getViewResult.SearchedLocations.Concat(findViewResult.SearchedLocations);
 			var errorMessage = string.Join(
 				Environment.NewLine,
-				new[] { $"Unable to find view '{viewName}'. The following locations were searched:" }.Concat(searchedLocations)); ;
+				new[] { $"Unable to find view '{viewName}'. The following locations were searched:" }.Concat(searchedLocations));
 
 			throw new InvalidOperationException(errorMessage);
 		}
 
-		private ActionContext GetActionContext(IServiceProvider serviceProvider)
+		private static ActionContext GetActionContext(IServiceProvider serviceProvider)
 		{
-			var httpContext = new DefaultHttpContext();
-			httpContext.RequestServices = serviceProvider;
+			var httpContext = new DefaultHttpContext
+			{
+				RequestServices = serviceProvider
+			};
 			return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 		}
 
@@ -168,18 +270,10 @@ namespace RazorEmailCore
 				options.ViewLocationFormats.Add(@"~/{0}.cshtml");
 				options.ViewLocationFormats.Add(@"~/RazorEmail/{0}.cshtml");
 				options.ViewLocationFormats.Add(@"~/RazorEmail/Views/{0}.cshtml");
+				options.ViewLocationFormats.Add(@"~/RazorEmail/{0}/{0}.cshtml");
+				options.ViewLocationFormats.Add(@"~/RazorEmail/{0}/Views/{0}.cshtml");
 			});
 		}
-
-		private IHostingEnvironment GetHostingEnvironment(IServiceProvider services)
-		{
-			return new RazorEmailHostingEnvironment
-			{
-				WebRootFileProvider = new PhysicalFileProvider(@"D:\Projects\RazorEmailCore\src\Example2\RazorEmail\NewUserTemplate"),
-				ContentRootFileProvider = new PhysicalFileProvider(@"D:\Projects\RazorEmailCore\src\Example2\RazorEmail\NewUserTemplate")
-			};
-		}
-
 	}
 
 	public class RazorEmailHostingEnvironment : Microsoft.AspNetCore.Hosting.IHostingEnvironment

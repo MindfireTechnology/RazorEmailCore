@@ -26,9 +26,6 @@ namespace RazorEmailCore
 		[DataMember(Name = "password")]
 		public string Password { get; set; }
 
-		public string PlainTextEmailTemplate { get; set; }
-		public string HtmlEmailTemplate { get; set; }
-
 		/// <summary>
 		/// Replaces any public string properties in the target with defined properties in the source
 		/// </summary>

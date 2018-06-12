@@ -13,7 +13,7 @@ namespace RazorEmailCore
 
 		public DefaultMessageSettingsProvider()
 		{
-			string path = Environment.GetEnvironmentVariable("BaseTemplatePath");
+			var path = Environment.GetEnvironmentVariable("BaseTemplatePath");
 			BasePath = Path.Combine(Directory.GetCurrentDirectory(), path);
 		}
 
@@ -23,22 +23,18 @@ namespace RazorEmailCore
 			ConfigSettings templateSettings = null;
 
 			// Check to see if there is a directory with the template name
-			string dirpath = BasePath;
+			var dirpath = BasePath;
 			if (Directory.Exists(Path.Combine(BasePath, templateName)))
 				dirpath = Path.Combine(BasePath, templateName);
 
 			// Look for the correct files (.json, .razor, .text)
 			string baseSettingsFile;
 			string templateSettingsFile;
-			string razorFile;
-			string textFile;
 
 			try
 			{
 				baseSettingsFile = Directory.EnumerateFiles(BasePath, "*.json").Single();
 				templateSettingsFile = Directory.EnumerateFiles(dirpath, "*.json").SingleOrDefault();
-				razorFile = Directory.EnumerateFiles(dirpath, "*.razor").SingleOrDefault();
-				textFile = Directory.EnumerateFiles(dirpath, "*.text").SingleOrDefault();
 			}
 			catch (InvalidOperationException ioex)
 			{
@@ -55,13 +51,6 @@ namespace RazorEmailCore
 			// if they're not already the same
 			if (templateSettings != null && !string.Equals(baseSettingsFile, templateSettingsFile))
 				ConfigSettings.ReplacePublicStringProperties(source: templateSettings, target: baseSettings);
-
-			// get the template text from the template files, if possible
-			if (!string.IsNullOrWhiteSpace(razorFile))
-				baseSettings.HtmlEmailTemplate = File.ReadAllText(razorFile);
-
-			if (!string.IsNullOrWhiteSpace(textFile))
-				baseSettings.PlainTextEmailTemplate = File.ReadAllText(textFile);
 
 			return baseSettings;
 		}

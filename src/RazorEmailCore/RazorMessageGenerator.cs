@@ -12,27 +12,31 @@ namespace RazorEmailCore
 {
 	public class RazorMessageGenerator : IMessageGenerator
 	{
-		public string GenerateMessageBody(string basePath, string templateName, object model)
-		{
-			return GenerateMessageBody(basePath, templateName, model);
-		}
+		protected static readonly string HtmlExtension = ".razor";
+		protected static readonly string TextExtension = ".text";
 
-		public string GenerateMessageBody<T>(string basePath, string templateName, T model)
+		public string GenerateHtmlMessageBody(string basePath, string templateName, object model) => GenerateMessageBody(basePath, templateName, HtmlExtension, model);
+		public string GenerateHtmlMessageBody<T>(string basePath, string templateName, T model) => GenerateMessageBody(basePath, templateName, HtmlExtension, model);
+
+		public string GenerateTextMessageBody(string basePath, string templateName, object model) => GenerateMessageBody(basePath, templateName, TextExtension, model);
+
+		public string GenerateTextMessageBody<T>(string basePath, string templateName, T model) => GenerateMessageBody(basePath, templateName, TextExtension, model);
+
+		protected static string GenerateMessageBody(string basePath, string templateName, string extension, object model)
 		{
 			string result = null;
 			try
 			{
-				// TODO: Please grab the right template here! -- Are we the HTML or Plain Text template?
-				string template = File.ReadAllText(Path.Combine(basePath, templateName, "TODO: FIX ME!"));
+				var template = File.ReadAllText(Path.Combine(basePath, templateName, Path.ChangeExtension(templateName, extension)));
 
 				var engine = EngineFactory.CreateEmbedded(model.GetType());
 
 				ITemplateSource source = new LoadedTemplateSource(template);
-				ModelTypeInfo modelInfo = new ModelTypeInfo(model.GetType());
-				CompilationResult compiled = engine.Core.CompileSource(source, modelInfo);
+				var modelInfo = new ModelTypeInfo(model.GetType());
+				var compiled = engine.Core.CompileSource(source, modelInfo);
 				compiled.EnsureSuccessful();
 
-				TemplatePage page = engine.Activate(compiled.CompiledType);
+				var page = engine.Activate(compiled.CompiledType);
 				page.PageContext = new PageContext { ModelTypeInfo = modelInfo };
 
 				result = engine.RunTemplate(page, model);
