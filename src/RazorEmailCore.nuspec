@@ -3,7 +3,7 @@
 	<metadata minClientVersion="3.2">
 		<id>RazorEmailCore</id>
 		<title>RazorEmailCore Library</title>
-		<version>1.0.5-beta</version>
+		<version>1.1.0</version>
 		<authors>Nate Zaugg</authors>
 		<owners>Mindfire Technology</owners>
 		<copyright>Copyright ©2017 Mindfire Technology</copyright>
@@ -20,7 +20,7 @@
 			<group targetFramework=".NETStandard1.6">
 				<dependency id="NETStandard.Library" version="[1.6.1, )" />
 				<dependency id="Newtonsoft.Json" version="[9.0.1, )" />
-				<dependency id="RazorLight" version="[1.0.0-rc1, )" />
+				<dependency id="RazorLight" version="[1.1.0, )" />
 				
 				<!--Packages that aren't explicitly referenced, but are used.-->
 				<dependency id="System.Collections" version="[4.3.0, )" />
@@ -40,28 +40,40 @@
 				<dependency id="System.Threading.Tasks" version="4.3.0" />
 			</group>
 
+			<group targetFramework=".NETStandard2.0">
+				<dependency id="Newtonsoft.Json" version="[11.0.2, )" />
+				<dependency id="Microsoft.AspNetCore.Hosting" version="2.1.0" />
+				<dependency id="Microsoft.AspNetCore.Mvc" version="2.1.0" />
+				<dependency id="Microsoft.AspNetCore.Mvc.Razor.Host" version="1.1.7" />
+				<dependency id="Microsoft.CSharp" version="4.5.0" />
+				<dependency id="Microsoft.Extensions.DiagnosticAdapter" version="2.1.0" />
+				<dependency id="Microsoft.Extensions.Logging" version="2.1.0" />
+				<dependency id="RazorLight" version="[1.1.0, )" />
+			</group>
+
 			<!--.NET 4.0-->
 			<group targetFramework=".NETFramework4.0">
 				<dependency id="Newtonsoft.Json" version="[9.0.1, )" />
-				<dependency id="RazorLight" version="[1.0.0-rc1, )" />
+				<dependency id="RazorLight" version="[1.1.0, )" />
 			</group>
 
 			<!--PCL Profile 259-->
 			<group targetFramework=".NETPortable4.5-Profile259">
 				<dependency id="Newtonsoft.Json" version="[9.0.1, )" />
-				<dependency id="RazorLight" version="[1.0.0-rc1, )" />
+				<dependency id="RazorLight" version="[1.1.0, )" />
 			</group>
 
 			<!--PCL Profile 328-->
 			<group targetFramework=".NETPortable4.0-Profile328">
 				<dependency id="Newtonsoft.Json" version="[9.0.1, )" />
-				<dependency id="RazorLight" version="[1.0.0-rc1, )" />
+				<dependency id="RazorLight" version="[1.1.0, )" />
 			</group>
 			
 		</dependencies>
 	</metadata>
 	<files>
 		<file src=".\RazorEmailCore\bin\Release\netstandard1.6\RazorEmailCore.*" target="lib\netstandard1.6" />
+		<file src=".\RazorEmailCore2\bin\Release\netcoreapp2.0\RazorEmailCore.*" target="lib\netcoreapp2.0" />
 		<file src=".\RazorEmailCore\bin\Release\netstandard1.6\RazorEmailCore.*" target="lib\net40" />
 		<file src=".\RazorEmailCore\bin\Release\netstandard1.6\RazorEmailCore.*" target="lib\portable-net40%2Bsl5%2Bwp80%2Bwin8%2Bwpa81" />
 		<file src=".\RazorEmailCore\bin\Release\netstandard1.6\RazorEmailCore.*" target="lib\portable-net45%2Bwp80%2Bwin8%2Bwpa81" />
