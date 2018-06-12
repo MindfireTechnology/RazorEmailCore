@@ -3,7 +3,7 @@
     "Tests": {
       "commandName": "Project",
       "environmentVariables": {
-        "BaseTemplatePath": "RazorEmail"
+        "BaseTemplatePath": "..\\..\\..\\RazorEmail"
       }
     }
   }
