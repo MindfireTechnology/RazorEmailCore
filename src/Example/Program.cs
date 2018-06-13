@@ -8,16 +8,20 @@ namespace Example
 	{
 		public static void Main(string[] args)
 		{
+			string senderEmail = "nate.zaugg@SomeDomain.com",
+				templateName = "NewUserTemplate",
+				receivername = "Nate Zaugg";
+
 			// Simple Example
 			var razoremail = new RazorEmail();
-			razoremail.CreateAndSendEmail("nate.zaugg@SomeDomain.com", "NewUserTemplate", new { Name = "Nate Zaugg" });
+			razoremail.CreateAndSendEmail(senderEmail, templateName, new { Name = receivername });
 			Console.WriteLine("Message sent successfully!");
 
 			// Full Example with Separate Create and send email steps
 			try
 			{
 				var emailBuilder = new RazorEmail();
-				var email = emailBuilder.CreateEmail("NewUserTemplate", new { Name = "Nate Zaugg" });
+				var email = emailBuilder.CreateEmail(templateName, new { Name = receivername });
 
 				// Modify the email
 				email.Sender = "\"Nate Zaugg\" <nate.zaugg@SomeDomain.com>";
@@ -49,7 +53,7 @@ namespace Example
 
 			// Async Example
 			/*await*/
-			new RazorEmail().CreateAndSendEmailAsync("nate.zaugg@somedomain.com", "NewUserTemplace", new { Name = "Nate Zaugg" });
+			new RazorEmail().CreateAndSendEmailAsync(senderEmail, templateName, new { Name = receivername });
 
 
 			Console.ReadLine();
